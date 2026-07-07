@@ -63,12 +63,10 @@ jobs:
         run: |
           docker build \
             -t "$REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" \
-            -t "$REGISTRY/${{ env.ECR_REPOSITORY }}:latest" \
             -f ${{ env.DOCKERFILE_PATH }} \
             ${{ env.DOCKER_BUILD_CONTEXT }}
 
           docker push "$REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-          docker push "$REGISTRY/${{ env.ECR_REPOSITORY }}:latest"
 
       - name: Show pushed image URI
         run: echo "Image pushed to ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
