@@ -127,7 +127,7 @@ variable "environment_variables" {
     }
   ]
 }
-  
+
 # ALB Configuration Variables
 variable "enable_deletion_protection" {
   description = "Enable deletion protection for ALB"
