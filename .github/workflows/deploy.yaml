@@ -23,7 +23,7 @@ env:
   ECR_REPOSITORY: nodejs-ecs-app
   IMAGE_TAG: ${{ github.sha }}
   DOCKERFILE_PATH: app/src/Dockerfile
-  DOCKER_CONTEXT: app/src
+  DOCKER_BUILD_CONTEXT: app/src
   TF_STATE_BUCKET: ecommerce-application-state-file
   TF_STATE_KEY: statefilestore/infra.tfstate
   TF_STATE_DYNAMODB_TABLE: statefile
@@ -47,6 +47,12 @@ jobs:
       - name: Verify AWS identity
         run: aws sts get-caller-identity
 
+      - name: Ensure Docker default context
+        run: |
+          docker context ls || true
+          docker context use default || true
+          docker info
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -59,7 +65,7 @@ jobs:
             -t "$REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" \
             -t "$REGISTRY/${{ env.ECR_REPOSITORY }}:latest" \
             -f ${{ env.DOCKERFILE_PATH }} \
-            ${{ env.DOCKER_CONTEXT }}
+            ${{ env.DOCKER_BUILD_CONTEXT }}
 
           docker push "$REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
           docker push "$REGISTRY/${{ env.ECR_REPOSITORY }}:latest"
