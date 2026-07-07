@@ -1,0 +1,56 @@
+name: Destroy Terraform Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: 'Type destroy to confirm infrastructure teardown'
+        required: true
+        default: ''
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: 1.8.5
+  TF_STATE_BUCKET: ecommerce-application-state-file
+  TF_STATE_KEY: statefilestore/infra.tfstate
+  TF_STATE_DYNAMODB_TABLE: statefile
+
+jobs:
+  destroy:
+    if: github.event.inputs.confirm_destroy == 'destroy'
+    runs-on: ubuntu-latest
+    name: Destroy Terraform resources
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-TF-Destroy-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform init
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=${{ env.TF_STATE_KEY }}" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ env.TF_STATE_DYNAMODB_TABLE }}" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform destroy
+        run: |
+          terraform destroy -auto-approve -input=false \
+            -var="aws_region=${{ env.AWS_REGION }}"
