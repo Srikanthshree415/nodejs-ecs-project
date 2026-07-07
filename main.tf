@@ -47,36 +47,36 @@ module "cloudwatch" {
 module "alb" {
   source = "./modules/alb"
 
-  name_prefix               = local.name_prefix
-  common_tags               = local.common_tags
-  vpc_id                    = module.vpc.vpc_id
-  public_subnet_ids         = module.vpc.public_subnet_ids
-  container_port            = var.container_port
-  health_check_path         = var.health_check_path
-  enable_access_logs        = var.enable_access_logs
-  access_logs_bucket        = var.access_logs_bucket
+  name_prefix                = local.name_prefix
+  common_tags                = local.common_tags
+  vpc_id                     = module.vpc.vpc_id
+  public_subnet_ids          = module.vpc.public_subnet_ids
+  container_port             = var.container_port
+  health_check_path          = var.health_check_path
+  enable_access_logs         = var.enable_access_logs
+  access_logs_bucket         = var.access_logs_bucket
   enable_deletion_protection = var.enable_deletion_protection
-  certificate_arn           = var.certificate_arn
+  certificate_arn            = var.certificate_arn
 }
 
 module "ecs" {
   source = "./modules/ecs"
 
-  name_prefix               = local.name_prefix
-  common_tags               = local.common_tags
-  vpc_id                    = module.vpc.vpc_id
-  private_subnet_ids        = module.vpc.private_subnet_ids
-  alb_security_group_id     = module.alb.alb_security_group_id
-  target_group_arn          = module.alb.target_group_arn
-  execution_role_arn        = module.iam.ecs_task_execution_role_arn
-  task_role_arn             = module.iam.ecs_task_role_arn
-  log_group_name            = module.cloudwatch.ecs_log_group_name
-  aws_region                = var.aws_region
-  image_uri                 = local.ecr_uri
-  container_port            = var.container_port
-  cpu                       = var.cpu
-  memory                    = var.memory
-  desired_count             = var.desired_count
-  health_check_path         = var.health_check_path
-  environment_variables     = var.environment_variables
+  name_prefix           = local.name_prefix
+  common_tags           = local.common_tags
+  vpc_id                = module.vpc.vpc_id
+  private_subnet_ids    = module.vpc.private_subnet_ids
+  alb_security_group_id = module.alb.alb_security_group_id
+  target_group_arn      = module.alb.target_group_arn
+  execution_role_arn    = module.iam.ecs_task_execution_role_arn
+  task_role_arn         = module.iam.ecs_task_role_arn
+  log_group_name        = module.cloudwatch.ecs_log_group_name
+  aws_region            = var.aws_region
+  image_uri             = local.ecr_uri
+  container_port        = var.container_port
+  cpu                   = var.cpu
+  memory                = var.memory
+  desired_count         = var.desired_count
+  health_check_path     = var.health_check_path
+  environment_variables = var.environment_variables
 }
