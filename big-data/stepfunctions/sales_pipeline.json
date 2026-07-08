@@ -39,8 +39,8 @@
             "Jar": "s3://us-east-1.elasticmapreduce/libs/script-runner/script-runner.jar",
             "Args": [
               "s3://${SCRIPT_BUCKET}/${SCRIPT_KEY}",
-              "s3://sales-raw-bucket-demo/sales/",
-              "s3://sales-curated-bucket-demo/sales/"
+              "s3://sales-raw-bucket-demo/",
+              "s3://sales-curated-bucket-demo/"
             ]
           }
         }
