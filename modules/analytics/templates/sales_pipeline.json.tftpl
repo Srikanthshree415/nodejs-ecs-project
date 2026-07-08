@@ -16,9 +16,10 @@
                 "s3://${script_bucket}/${script_key}",
                 "s3://${raw_bucket}/",
                 "s3://${curated_bucket}/"
+              ]
+            }
           }
-        }
-      },
+        },
       "Retry": [
         {
           "ErrorEquals": ["States.ALL"],
