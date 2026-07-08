@@ -1,18 +1,18 @@
 import sys
-
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, expr, trim, when
-
+from pyspark.sql.functions import col, expr, trim, when, regexp_replace
 
 def normalize_column_name(name: str) -> str:
     return name.strip().lower().replace(" ", "_").replace("(", "").replace(")", "")
-
 
 def main():
     spark = SparkSession.builder.appName("imdb-movie-etl").getOrCreate()
 
     input_path = sys.argv[1] if len(sys.argv) > 1 else "s3://your-raw-bucket/"
-    output_path = sys.argv[2] if len(sys.argv) > 2 else "s3://your-curated-bucket/"
+    output_path = sys.argv[2] if len(sys.argv) > 2 else "s3://your-curated-bucket/output/"
+
+    print("Input Path:", input_path)
+    print("Output Path:", output_path)
 
     df = spark.read.option("header", True).option("inferSchema", True).option("quote", '"').option("escape", '"').csv(input_path)
 
@@ -23,7 +23,7 @@ def main():
     df = df.withColumn("year", col("year").cast("int"))
     df = df.withColumn("runtime_minutes", col("runtime_minutes").cast("int"))
     df = df.withColumn("rating", col("rating").cast("double"))
-    df = df.withColumn("votes", expr("int(regexp_replace(votes, ',', ''))"))
+    df = df.withColumn("votes", regexp_replace(col("votes"), ",", "").cast("int"))
     df = df.withColumn("revenue_millions", col("revenue_millions").cast("double"))
     df = df.withColumn("metascore", col("metascore").cast("int"))
 
@@ -43,7 +43,6 @@ def main():
 
     df.write.mode("overwrite").parquet(output_path)
     spark.stop()
-
 
 if __name__ == "__main__":
     main()

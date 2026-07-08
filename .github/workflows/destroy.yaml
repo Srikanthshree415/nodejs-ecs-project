@@ -54,3 +54,4 @@ jobs:
         run: |
           terraform destroy -auto-approve -input=false \
             -var="aws_region=${{ env.AWS_REGION }}"
+            
