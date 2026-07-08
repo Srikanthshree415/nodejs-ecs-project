@@ -89,6 +89,26 @@ resource "aws_iam_role_policy" "lambda_s3" {
   })
 }
 
+resource "aws_iam_role_policy" "lambda_sfn" {
+  name = "${var.name_prefix}-analytics-lambda-sfn"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "states:StartExecution"
+        ]
+        Resource = [
+          aws_sfn_state_machine.pipeline.arn
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_lambda_function" "validator" {
   function_name    = "${var.name_prefix}-validate-sales-file"
   filename         = data.archive_file.lambda.output_path
@@ -101,6 +121,7 @@ resource "aws_lambda_function" "validator" {
   environment {
     variables = {
       LOG_LEVEL = "INFO"
+      SFN_ARN   = aws_sfn_state_machine.pipeline.arn
     }
   }
 }
@@ -327,6 +348,7 @@ resource "aws_emr_cluster" "this" {
     emr_managed_slave_security_group  = aws_security_group.emr_slave.id
   }
 
-  keep_job_flow_alive_when_no_steps = false
+  # Keep the cluster alive after creation so Step Functions can add steps
+  keep_job_flow_alive_when_no_steps = true
   termination_protection            = false
 }

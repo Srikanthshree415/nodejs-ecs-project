@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import logging
+import os
 
 import boto3
 
@@ -12,6 +13,8 @@ REQUIRED_COLUMNS = ["order_id", "order_date", "customer_id", "product_id", "quan
 
 
 def lambda_handler(event, context):
+    s3 = boto3.client("s3")
+    sfn = boto3.client("stepfunctions")
     try:
         record = event["Records"][0]
         bucket = record["s3"]["bucket"]["name"]
@@ -20,7 +23,6 @@ def lambda_handler(event, context):
         if not key.lower().endswith(".csv"):
             raise ValueError("Only CSV files are supported")
 
-        s3 = boto3.client("s3")
         obj = s3.get_object(Bucket=bucket, Key=key)
         content = obj["Body"].read().decode("utf-8-sig")
         reader = csv.DictReader(io.StringIO(content))
@@ -37,13 +39,29 @@ def lambda_handler(event, context):
         if not rows:
             raise ValueError("CSV file is empty")
 
+        # Start Step Functions execution if configured
+        sfn_arn = os.environ.get("SFN_ARN")
+        started = False
+        execution_arn = None
+        if sfn_arn:
+            try:
+                payload = {"bucket": bucket, "key": key, "row_count": len(rows)}
+                resp = sfn.start_execution(stateMachineArn=sfn_arn, input=json.dumps(payload))
+                execution_arn = resp.get("executionArn")
+                started = True
+                logger.info(f"Started Step Functions execution: {execution_arn}")
+            except Exception:
+                logger.exception("Failed to start Step Functions execution")
+
         return {
             "statusCode": 200,
             "body": json.dumps({
                 "validated": True,
                 "bucket": bucket,
                 "key": key,
-                "row_count": len(rows)
+                "row_count": len(rows),
+                "stepfunctions_started": started,
+                "execution_arn": execution_arn,
             })
         }
     except Exception as exc:
