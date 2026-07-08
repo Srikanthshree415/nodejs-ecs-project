@@ -1,33 +1,8 @@
 {
   "Comment": "Validate uploaded sales CSV files and trigger ETL processing",
-  "StartAt": "ValidateFile",
-  "States": {
-    "ValidateFile": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "Parameters": {
-        "FunctionName": "${lambda_function_name}",
-        "Payload": {
-          "Records.$": "$"
-        }
-      },
-      "Retry": [
-        {
-          "ErrorEquals": ["States.ALL"],
-          "IntervalSeconds": 30,
-          "MaxAttempts": 3,
-          "BackoffRate": 2
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": ["States.ALL"],
-          "Next": "NotifyFailure"
-        }
-      ],
-      "Next": "RunSparkJob"
-    },
-    "RunSparkJob": {
+    "StartAt": "RunSparkJob",
+    "States": {
+      "RunSparkJob": {
       "Type": "Task",
       "Resource": "arn:aws:states:::elasticmapreduce:addStep.sync",
       "Parameters": {
@@ -36,12 +11,11 @@
           "Name": "sales-etl",
           "ActionOnFailure": "TERMINATE_CLUSTER",
           "HadoopJarStep": {
-            "Jar": "s3://${aws_region}.elasticmapreduce/libs/script-runner/script-runner.jar",
-            "Args": [
-              "s3://${script_bucket}/${script_key}",
-              "s3://${raw_bucket}/",
-              "s3://${curated_bucket}/"
-            ]
+              "Jar": "s3://${aws_region}.elasticmapreduce/libs/script-runner/script-runner.jar",
+              "Args": [
+                "s3://${script_bucket}/${script_key}",
+                "s3://${raw_bucket}/",
+                "s3://${curated_bucket}/"
           }
         }
       },

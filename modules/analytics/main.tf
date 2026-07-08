@@ -22,6 +22,8 @@ data "archive_file" "lambda" {
   source_file = "${path.module}/../../big-data/lambda/validate_sales_file.py"
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "raw" {
   bucket = local.raw_bucket_name
   tags   = var.common_tags
@@ -102,7 +104,7 @@ resource "aws_iam_role_policy" "lambda_sfn" {
           "states:StartExecution"
         ]
         Resource = [
-          aws_sfn_state_machine.pipeline.arn
+          "arn:aws:states:${var.aws_region}:${data.aws_caller_identity.current.account_id}:stateMachine:${var.name_prefix}-sales-pipeline"
         ]
       }
     ]
@@ -121,7 +123,7 @@ resource "aws_lambda_function" "validator" {
   environment {
     variables = {
       LOG_LEVEL = "INFO"
-      SFN_ARN   = aws_sfn_state_machine.pipeline.arn
+      SFN_ARN   = "arn:aws:states:${var.aws_region}:${data.aws_caller_identity.current.account_id}:stateMachine:${var.name_prefix}-sales-pipeline"
     }
   }
 }
@@ -187,7 +189,7 @@ resource "aws_iam_role_policy" "stepfunctions" {
           "elasticmapreduce:DescribeCluster"
         ]
         Resource = [
-          aws_lambda_function.validator.arn,
+          
           aws_sns_topic.pipeline.arn,
           "*"
         ]
@@ -202,14 +204,13 @@ resource "aws_sfn_state_machine" "pipeline" {
   type     = "STANDARD"
 
   definition = templatefile("${path.module}/templates/sales_pipeline.json.tftpl", {
-    lambda_function_name = aws_lambda_function.validator.function_name
-    emr_cluster_id       = aws_emr_cluster.this.id
-    script_bucket        = aws_s3_bucket.raw.bucket
-    script_key           = aws_s3_object.spark_script.key
-    raw_bucket           = aws_s3_bucket.raw.bucket
-    curated_bucket       = aws_s3_bucket.curated.bucket
-    sns_topic_arn        = aws_sns_topic.pipeline.arn
-    aws_region           = var.aws_region
+    emr_cluster_id = aws_emr_cluster.this.id
+    script_bucket  = aws_s3_bucket.raw.bucket
+    script_key     = aws_s3_object.spark_script.key
+    raw_bucket     = aws_s3_bucket.raw.bucket
+    curated_bucket = aws_s3_bucket.curated.bucket
+    sns_topic_arn  = aws_sns_topic.pipeline.arn
+    aws_region     = var.aws_region
   })
 }
 
