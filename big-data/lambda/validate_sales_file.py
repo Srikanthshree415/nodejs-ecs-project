@@ -10,7 +10,30 @@ import boto3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-REQUIRED_COLUMNS = ["order_id", "order_date", "customer_id", "product_id", "quantity", "price"]
+REQUIRED_COLUMNS = [
+    "rank",
+    "title",
+    "genre",
+    "description",
+    "director",
+    "actors",
+    "year",
+    "runtime_minutes",
+    "rating",
+    "votes",
+    "revenue_millions",
+    "metascore",
+]
+
+
+def normalize_header(name):
+    return (
+        name.strip()
+        .lower()
+        .replace(" ", "_")
+        .replace("(", "")
+        .replace(")", "")
+    )
 
 
 def lambda_handler(event, context):
@@ -34,7 +57,7 @@ def lambda_handler(event, context):
         if reader.fieldnames is None:
             raise ValueError("CSV file is missing a header row")
 
-        normalized = [name.strip().lower() for name in reader.fieldnames]
+        normalized = [normalize_header(name) for name in reader.fieldnames]
         missing = [col for col in REQUIRED_COLUMNS if col not in normalized]
         if missing:
             raise ValueError(f"Missing required columns: {missing}")
