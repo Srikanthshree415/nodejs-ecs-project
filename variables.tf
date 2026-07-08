@@ -185,37 +185,50 @@ variable "enable_load_balancer" {
   default     = false
 }
 
-# # S3 Configuration Variables - CloudFormation Conversion
-# variable "s3_stack_name" {
-#   description = "Name for the S3 stack (equivalent to CloudFormation stack name)"
-#   type        = string
-#   default     = "s3-bucekt-convertion"
-# }
+variable "analytics_raw_bucket_name" {
+  description = "Bucket for incoming sales CSV files"
+  type        = string
+  default     = "sales-raw-bucket-demo"
+}
 
-# variable "s3_folders" {
-#   description = "Set of folder names to create in the S3 bucket"
-#   type        = set(string)
-#   default     = ["documents", "data", "logs", "configs"]
-# }
+variable "analytics_curated_bucket_name" {
+  description = "Bucket for curated Parquet output"
+  type        = string
+  default     = "sales-curated-bucket-demo"
+}
 
-# variable "s3_files" {
-#   description = "Map of files to upload to S3 bucket"
-#   type = map(object({
-#     source       = string
-#     content_type = string
-#   }))
-#   default = {
-#     "README.md" = {
-#       source       = "../sample-files/README.md"
-#       content_type = "text/markdown"
-#     }
-#     "configs/config.json" = {
-#       source       = "../sample-files/config.json"
-#       content_type = "application/json"
-#     }
-#     "data/data.csv" = {
-#       source       = "../sample-files/data.csv"
-#       content_type = "text/csv"
-#     }
-#   }
-# }
+variable "analytics_lambda_zip_path" {
+  description = "Path to the Lambda zip package"
+  type        = string
+  default     = "./analytics/lambda/package.zip"
+}
+
+variable "analytics_sns_email_endpoint" {
+  description = "Email for SNS notifications"
+  type        = string
+  default     = "kamerasrikanth415@gmail.com"
+}
+
+variable "analytics_emr_subnet_id" {
+  description = "Subnet ID for the EMR cluster"
+  type        = string
+  default     = "subnet-00000000000000000"
+}
+
+variable "analytics_emr_master_security_group_id" {
+  description = "Security group for EMR master"
+  type        = string
+  default     = "sg-00000000000000000"
+}
+
+variable "analytics_emr_slave_security_group_id" {
+  description = "Security group for EMR slave"
+  type        = string
+  default     = "sg-00000000000000000"
+}
+
+variable "analytics_emr_instance_profile_arn" {
+  description = "Instance profile ARN for EMR"
+  type        = string
+  default     = "arn:aws:iam::123456789012:instance-profile/emr-ec2-default-role"
+}
