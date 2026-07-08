@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import urllib.parse
 
 import boto3
 
@@ -19,6 +20,9 @@ def lambda_handler(event, context):
         record = event["Records"][0]
         bucket = record["s3"]["bucket"]["name"]
         key = record["s3"]["object"]["key"]
+        key = urllib.parse.unquote_plus(key)
+
+        logger.info(f"Processing S3 event for bucket={bucket}, key={key}")
 
         if not key.lower().endswith(".csv"):
             raise ValueError("Only CSV files are supported")
