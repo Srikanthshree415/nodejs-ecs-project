@@ -36,8 +36,9 @@
           "Name": "sales-etl",
           "ActionOnFailure": "TERMINATE_CLUSTER",
           "HadoopJarStep": {
-            "Jar": "s3://us-east-1.elasticmapreduce/libs/script-runner/script-runner.jar",
+            "Jar": "s3://us-east-1.elasticmapreduce/libs/command-runner.jar",
             "Args": [
+              "spark-submit",
               "s3://${SCRIPT_BUCKET}/${SCRIPT_KEY}",
               "s3://sales-raw-bucket-demo/",
               "s3://sales-curated-bucket-demo/"

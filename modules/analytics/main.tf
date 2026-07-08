@@ -203,7 +203,7 @@ resource "aws_sfn_state_machine" "pipeline" {
   role_arn = aws_iam_role.stepfunctions.arn
   type     = "STANDARD"
 
-  definition = templatefile("${path.module}/templates/sales_pipeline.json.tftpl", {
+  definition = templatefile("${path.root}/big-data/stepfunctions/sales_pipeline.json", {
     emr_cluster_id = aws_emr_cluster.this.id
     script_bucket  = aws_s3_bucket.raw.bucket
     script_key     = aws_s3_object.spark_script.key
