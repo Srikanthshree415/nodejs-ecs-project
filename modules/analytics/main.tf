@@ -188,6 +188,7 @@ resource "aws_sfn_state_machine" "pipeline" {
     raw_bucket           = aws_s3_bucket.raw.bucket
     curated_bucket       = aws_s3_bucket.curated.bucket
     sns_topic_arn        = aws_sns_topic.pipeline.arn
+    aws_region           = var.aws_region
   })
 }
 
