@@ -133,11 +133,11 @@ resource "aws_lambda_permission" "allow_s3" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.validator.function_name
   principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.raw.arn
+  source_arn    = aws_s3_bucket.curated.arn
 }
 
 resource "aws_s3_bucket_notification" "raw_uploads" {
-  bucket = aws_s3_bucket.raw.id
+  bucket = aws_s3_bucket.curated.id
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.validator.arn
@@ -207,8 +207,8 @@ resource "aws_sfn_state_machine" "pipeline" {
     emr_cluster_id = aws_emr_cluster.this.id
     script_bucket  = aws_s3_bucket.raw.bucket
     script_key     = aws_s3_object.spark_script.key
-    raw_bucket     = aws_s3_bucket.raw.bucket
-    curated_bucket = aws_s3_bucket.curated.bucket
+    raw_bucket     = aws_s3_bucket.curated.bucket
+    curated_bucket = aws_s3_bucket.raw.bucket
     sns_topic_arn  = aws_sns_topic.pipeline.arn
     aws_region     = var.aws_region
   })
