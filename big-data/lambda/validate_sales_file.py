@@ -43,9 +43,12 @@ def lambda_handler(event, context):
         record = event["Records"][0]
         bucket = record["s3"]["bucket"]["name"]
         key = record["s3"]["object"]["key"]
-        key = urllib.parse.unquote_plus(key)
+        key = urllib.parse.unquote(key).strip()
+        if key.startswith("/"):
+            key = key[1:]
 
         logger.info(f"Processing S3 event for bucket={bucket}, key={key}")
+        logger.info(f"Processed key repr={repr(key)}")
 
         if not key.lower().endswith(".csv"):
             raise ValueError("Only CSV files are supported")
