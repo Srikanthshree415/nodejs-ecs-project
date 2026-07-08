@@ -35,31 +35,31 @@ module "lambda" {
 module "stepfunctions" {
   source = "./modules/stepfunctions"
 
-  role_name             = "sales-stepfunctions-role"
-  state_machine_name    = "sales-pipeline"
-  lambda_function_arn   = module.lambda.lambda_function_arn
-  lambda_function_name  = module.lambda.lambda_function_name
-  sns_topic_arn         = module.sns.topic_arn
+  role_name            = "sales-stepfunctions-role"
+  state_machine_name   = "sales-pipeline"
+  lambda_function_arn  = module.lambda.lambda_function_arn
+  lambda_function_name = module.lambda.lambda_function_name
+  sns_topic_arn        = module.sns.topic_arn
 }
 
 module "emr" {
   source = "./modules/emr"
 
-  service_role_name       = "sales-emr-service-role"
-  cluster_name            = "sales-emr-cluster"
-  subnet_id               = var.subnet_id
+  service_role_name        = "sales-emr-service-role"
+  cluster_name             = "sales-emr-cluster"
+  subnet_id                = var.subnet_id
   master_security_group_id = var.master_security_group_id
   slave_security_group_id  = var.slave_security_group_id
-  instance_profile_arn    = var.instance_profile_arn
-  raw_bucket_arn          = module.s3.raw_bucket_arn
-  curated_bucket_arn      = module.s3.curated_bucket_arn
+  instance_profile_arn     = var.instance_profile_arn
+  raw_bucket_arn           = module.s3.raw_bucket_arn
+  curated_bucket_arn       = module.s3.curated_bucket_arn
 }
 
 module "iam" {
   source = "./modules/iam"
 
-  role_name         = "sales-glue-crawler-role"
-  raw_bucket_arn    = module.s3.raw_bucket_arn
+  role_name          = "sales-glue-crawler-role"
+  raw_bucket_arn     = module.s3.raw_bucket_arn
   curated_bucket_arn = module.s3.curated_bucket_arn
 }
 
@@ -81,6 +81,6 @@ module "cloudwatch" {
 module "sns" {
   source = "./modules/sns"
 
-  topic_name      = var.sns_topic_name
-  email_endpoint  = var.sns_email_endpoint
+  topic_name     = var.sns_topic_name
+  email_endpoint = var.sns_email_endpoint
 }

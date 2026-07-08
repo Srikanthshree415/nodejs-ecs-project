@@ -12,7 +12,7 @@ terraform {
 }
 
 locals {
-  raw_bucket_name    = var.raw_bucket_name != "" ? var.raw_bucket_name : "${var.name_prefix}-sales-raw"
+  raw_bucket_name     = var.raw_bucket_name != "" ? var.raw_bucket_name : "${var.name_prefix}-sales-raw"
   curated_bucket_name = var.curated_bucket_name != "" ? var.curated_bucket_name : "${var.name_prefix}-sales-curated"
 }
 

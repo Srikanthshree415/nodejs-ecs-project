@@ -48,12 +48,12 @@ resource "aws_sfn_state_machine" "this" {
     StartAt = "ValidateFile"
     States = {
       ValidateFile = {
-        Type = "Task"
+        Type     = "Task"
         Resource = "arn:aws:states:::lambda:invoke"
         Parameters = {
           FunctionName = var.lambda_function_name
           Payload = {
-            Records = "${var.event_payload_placeholder}" 
+            Records = "${var.event_payload_placeholder}"
           }
         }
         End = true
