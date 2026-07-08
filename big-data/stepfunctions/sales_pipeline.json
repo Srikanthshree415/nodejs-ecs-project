@@ -31,17 +31,17 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::elasticmapreduce:addStep.sync",
       "Parameters": {
-        "ClusterId": "${EMR_CLUSTER_ID}",
+        "ClusterId": "${emr_cluster_id}",
         "Step": {
           "Name": "sales-etl",
           "ActionOnFailure": "TERMINATE_CLUSTER",
           "HadoopJarStep": {
-            "Jar": "s3://us-east-1.elasticmapreduce/libs/command-runner.jar",
+            "Jar": "s3://${aws_region}.elasticmapreduce/libs/command-runner.jar",
             "Args": [
               "spark-submit",
-              "s3://${SCRIPT_BUCKET}/${SCRIPT_KEY}",
-              "s3://sales-raw-bucket-demo/",
-              "s3://sales-curated-bucket-demo/"
+              "s3://${script_bucket}/${script_key}",
+              "s3://${raw_bucket}/",
+              "s3://${curated_bucket}/"
             ]
           }
         }
@@ -66,7 +66,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
-        "TopicArn": "${SNS_TOPIC_ARN}",
+        "TopicArn": "${sns_topic_arn}",
         "Message": "Sales ETL completed successfully"
       },
       "End": true
@@ -75,7 +75,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
-        "TopicArn": "${SNS_TOPIC_ARN}",
+        "TopicArn": "${sns_topic_arn}",
         "Message": "Sales ETL failed"
       },
       "End": true
