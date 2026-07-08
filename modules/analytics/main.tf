@@ -189,7 +189,7 @@ resource "aws_iam_role_policy" "stepfunctions" {
           "elasticmapreduce:DescribeCluster"
         ]
         Resource = [
-          
+
           aws_sns_topic.pipeline.arn,
           "*"
         ]
