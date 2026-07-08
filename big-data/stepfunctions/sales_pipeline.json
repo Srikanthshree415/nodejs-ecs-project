@@ -34,9 +34,9 @@
         "ClusterId": "${emr_cluster_id}",
         "Step": {
           "Name": "sales-etl",
-          "ActionOnFailure": "TERMINATE_CLUSTER",
+          "ActionOnFailure": "CONTINUE",
           "HadoopJarStep": {
-            "Jar": "s3://${aws_region}.elasticmapreduce/libs/command-runner.jar",
+            "Jar": "command-runner.jar",
             "Args": [
               "spark-submit",
               "s3://${script_bucket}/${script_key}",
