@@ -448,7 +448,7 @@ resource "aws_glue_crawler" "sales_raw" {
   }
 
   configuration = jsonencode({
-    Version  = 1.0
+    Version = 1.0
     Grouping = {
       TableGroupingPolicy = "CombineCompatibleSchemas"
     }
