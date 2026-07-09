@@ -31,8 +31,8 @@ variable "raw_bucket_name" {
   default     = ""
 }
 
-variable "curated_bucket_name" {
-  description = "Name of the S3 bucket used for curated Parquet output"
+variable "processed_bucket_name" {
+  description = "Name of the S3 bucket used for processed Parquet output"
   type        = string
   default     = ""
 }

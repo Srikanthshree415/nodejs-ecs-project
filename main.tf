@@ -13,14 +13,14 @@ module "vpc" {
 module "analytics" {
   source = "./modules/analytics"
 
-  name_prefix         = local.name_prefix
-  aws_region          = var.aws_region
-  common_tags         = local.common_tags
-  vpc_id              = module.vpc.vpc_id
-  subnet_ids          = module.vpc.public_subnet_ids
-  raw_bucket_name     = var.analytics_raw_bucket_name
-  curated_bucket_name = var.analytics_curated_bucket_name
-  sns_email_endpoint  = var.analytics_sns_email_endpoint
+  name_prefix           = local.name_prefix
+  aws_region            = var.aws_region
+  common_tags           = local.common_tags
+  vpc_id                = module.vpc.vpc_id
+  subnet_ids            = module.vpc.public_subnet_ids
+  raw_bucket_name       = var.analytics_raw_bucket_name
+  processed_bucket_name = var.analytics_processed_bucket_name
+  sns_email_endpoint    = var.analytics_sns_email_endpoint
 }
 
 # Get current AWS account ID and region

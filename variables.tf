@@ -191,7 +191,7 @@ variable "analytics_raw_bucket_name" {
   default     = "sales-raw-bucket-demo"
 }
 
-variable "analytics_curated_bucket_name" {
+variable "analytics_processed_bucket_name" {
   description = "Bucket for curated Parquet output"
   type        = string
   default     = "sales-curated-bucket-demo"

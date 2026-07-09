@@ -1,32 +1,7 @@
 {
-  "Comment": "Validate uploaded sales CSV files and trigger ETL processing",
-  "StartAt": "ValidateFile",
+  "Comment": "Run Sales ETL Pipeline",
+  "StartAt": "RunSparkJob",
   "States": {
-    "ValidateFile": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "Parameters": {
-        "FunctionName": "nodej-ecs-capplication-dev-validate-sales-file",
-        "Payload": {
-          "Records.$": "$"
-        }
-      },
-      "Retry": [
-        {
-          "ErrorEquals": ["States.ALL"],
-          "IntervalSeconds": 30,
-          "MaxAttempts": 3,
-          "BackoffRate": 2
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": ["States.ALL"],
-          "Next": "NotifyFailure"
-        }
-      ],
-      "Next": "RunSparkJob"
-    },
     "RunSparkJob": {
       "Type": "Task",
       "Resource": "arn:aws:states:::elasticmapreduce:addStep.sync",
@@ -34,21 +9,23 @@
         "ClusterId": "${emr_cluster_id}",
         "Step": {
           "Name": "sales-etl",
-          "ActionOnFailure": "CONTINUE",
+          "ActionOnFailure": "CANCEL_AND_WAIT",
           "HadoopJarStep": {
             "Jar": "command-runner.jar",
             "Args": [
               "spark-submit",
               "s3://${script_bucket}/${script_key}",
               "s3://${raw_bucket}/",
-              "s3://${curated_bucket}/"
+              "s3://${processed_bucket}/output/"
             ]
           }
         }
       },
       "Retry": [
         {
-          "ErrorEquals": ["States.ALL"],
+          "ErrorEquals": [
+            "States.ALL"
+          ],
           "IntervalSeconds": 60,
           "MaxAttempts": 2,
           "BackoffRate": 2
@@ -56,7 +33,9 @@
       ],
       "Catch": [
         {
-          "ErrorEquals": ["States.ALL"],
+          "ErrorEquals": [
+            "States.ALL"
+          ],
           "Next": "NotifyFailure"
         }
       ],
@@ -67,7 +46,7 @@
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
         "TopicArn": "${sns_topic_arn}",
-        "Message": "Sales ETL completed successfully"
+        "Message": "Sales ETL completed successfully."
       },
       "End": true
     },
@@ -76,7 +55,7 @@
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
         "TopicArn": "${sns_topic_arn}",
-        "Message": "Sales ETL failed"
+        "Message": "Sales ETL failed."
       },
       "End": true
     }

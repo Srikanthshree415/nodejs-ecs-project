@@ -12,8 +12,8 @@ terraform {
 }
 
 locals {
-  raw_bucket_name     = var.raw_bucket_name != "" ? var.raw_bucket_name : "${var.name_prefix}-sales-raw"
-  curated_bucket_name = var.curated_bucket_name != "" ? var.curated_bucket_name : "${var.name_prefix}-sales-curated"
+  raw_bucket_name       = var.raw_bucket_name != "" ? var.raw_bucket_name : "${var.name_prefix}-sales-raw"
+  processed_bucket_name = var.processed_bucket_name != "" ? var.processed_bucket_name : "${var.name_prefix}-sales-processed"
 }
 
 data "archive_file" "lambda" {
@@ -29,8 +29,8 @@ resource "aws_s3_bucket" "raw" {
   tags   = var.common_tags
 }
 
-resource "aws_s3_bucket" "curated" {
-  bucket = local.curated_bucket_name
+resource "aws_s3_bucket" "processed" {
+  bucket = local.processed_bucket_name
   tags   = var.common_tags
 }
 
@@ -133,11 +133,11 @@ resource "aws_lambda_permission" "allow_s3" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.validator.function_name
   principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.curated.arn
+  source_arn    = aws_s3_bucket.raw.arn
 }
 
 resource "aws_s3_bucket_notification" "raw_uploads" {
-  bucket = aws_s3_bucket.curated.id
+  bucket = aws_s3_bucket.raw.id
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.validator.arn
@@ -204,13 +204,13 @@ resource "aws_sfn_state_machine" "pipeline" {
   type     = "STANDARD"
 
   definition = templatefile("${path.root}/big-data/stepfunctions/sales_pipeline.json", {
-    emr_cluster_id = aws_emr_cluster.this.id
-    script_bucket  = aws_s3_bucket.raw.bucket
-    script_key     = aws_s3_object.spark_script.key
-    raw_bucket     = aws_s3_bucket.curated.bucket
-    curated_bucket = aws_s3_bucket.raw.bucket
-    sns_topic_arn  = aws_sns_topic.pipeline.arn
-    aws_region     = var.aws_region
+    emr_cluster_id   = aws_emr_cluster.this.id
+    script_bucket    = aws_s3_bucket.raw.bucket
+    script_key       = aws_s3_object.spark_script.key
+    raw_bucket       = aws_s3_bucket.raw.bucket
+    processed_bucket = aws_s3_bucket.processed.bucket
+    sns_topic_arn    = aws_sns_topic.pipeline.arn
+    aws_region       = var.aws_region
   })
 }
 
@@ -311,8 +311,8 @@ resource "aws_iam_role_policy" "emr_s3_access" {
         Resource = [
           aws_s3_bucket.raw.arn,
           "${aws_s3_bucket.raw.arn}/*",
-          aws_s3_bucket.curated.arn,
-          "${aws_s3_bucket.curated.arn}/*"
+          aws_s3_bucket.processed.arn,
+          "${aws_s3_bucket.processed.arn}/*"
         ]
       }
     ]
@@ -352,4 +352,118 @@ resource "aws_emr_cluster" "this" {
   # Keep the cluster alive after creation so Step Functions can add steps
   keep_job_flow_alive_when_no_steps = true
   termination_protection            = false
+}
+
+
+resource "aws_glue_catalog_database" "sales" {
+  name = "${var.name_prefix}_sales_db"
+}
+
+resource "aws_iam_role" "glue" {
+  name = "${var.name_prefix}-glue-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = "sts:AssumeRole"
+
+      Principal = {
+        Service = "glue.amazonaws.com"
+      }
+    }]
+  })
+}
+
+
+resource "aws_iam_role_policy_attachment" "glue_service" {
+  role       = aws_iam_role.glue.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
+resource "aws_iam_role_policy" "glue_s3_access" {
+
+  name = "${var.name_prefix}-glue-s3"
+
+  role = aws_iam_role.glue.id
+
+  policy = jsonencode({
+
+    Version = "2012-10-17"
+
+    Statement = [
+
+      {
+
+        Effect = "Allow"
+
+        Action = [
+
+          "s3:GetObject",
+
+          "s3:PutObject",
+
+          "s3:ListBucket"
+
+        ]
+
+        Resource = [
+
+          aws_s3_bucket.processed.arn,
+
+          "${aws_s3_bucket.processed.arn}/*"
+
+        ]
+
+      }
+
+    ]
+
+  })
+
+}
+
+
+resource "aws_glue_crawler" "sales" {
+
+  name = "${var.name_prefix}-sales-crawler"
+
+  role = aws_iam_role.glue.arn
+
+  database_name = aws_glue_catalog_database.sales.name
+
+  table_prefix = "sales_"
+
+  s3_target {
+
+    path = "s3://${aws_s3_bucket.processed.bucket}/output/"
+
+  }
+
+  schema_change_policy {
+
+    delete_behavior = "LOG"
+
+    update_behavior = "UPDATE_IN_DATABASE"
+
+  }
+
+  recrawl_policy {
+
+    recrawl_behavior = "CRAWL_EVERYTHING"
+
+  }
+
+  configuration = jsonencode({
+
+    Version = 1.0
+
+    Grouping = {
+
+      TableGroupingPolicy = "CombineCompatibleSchemas"
+
+    }
+
+  })
+
 }

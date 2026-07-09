@@ -2,8 +2,8 @@ output "raw_bucket_name" {
   value = aws_s3_bucket.raw.bucket
 }
 
-output "curated_bucket_name" {
-  value = aws_s3_bucket.curated.bucket
+output "processed_bucket_name" {
+  value = aws_s3_bucket.processed.bucket
 }
 
 output "lambda_function_name" {
