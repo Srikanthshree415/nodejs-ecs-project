@@ -27,13 +27,13 @@ def main():
     input_path = (
         sys.argv[1]
         if len(sys.argv) > 1
-        else "s3://your-raw-bucket/"
+        else "s3://sales-raw-bucket/"
     )
 
 output_path = (
     sys.argv[2]
     if len(sys.argv) > 2
-    else "s3://your-processed-bucket/output/"
+    else "s3://processed_bucket/output/"
 )
 
     print("=" * 60)

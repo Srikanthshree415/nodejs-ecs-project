@@ -212,6 +212,12 @@ resource "aws_sfn_state_machine" "pipeline" {
     sns_topic_arn    = aws_sns_topic.pipeline.arn
     aws_region       = var.aws_region
   })
+
+  depends_on = [
+    aws_emr_cluster.this,
+    aws_s3_object.spark_script,
+    aws_sns_topic.pipeline
+  ]
 }
 
 resource "aws_security_group" "emr_master" {
@@ -423,47 +429,28 @@ resource "aws_iam_role_policy" "glue_s3_access" {
 
 }
 
-
-resource "aws_glue_crawler" "sales" {
-
-  name = "${var.name_prefix}-sales-crawler"
-
-  role = aws_iam_role.glue.arn
-
+resource "aws_glue_crawler" "sales_raw" {
+  name          = "sales-raw-crawler"
+  role          = aws_iam_role.glue.arn
   database_name = aws_glue_catalog_database.sales.name
 
-  table_prefix = "sales_"
-
   s3_target {
-
     path = "s3://${aws_s3_bucket.processed.bucket}/output/"
-
   }
 
   schema_change_policy {
-
     delete_behavior = "LOG"
-
     update_behavior = "UPDATE_IN_DATABASE"
-
   }
 
   recrawl_policy {
-
     recrawl_behavior = "CRAWL_EVERYTHING"
-
   }
 
   configuration = jsonencode({
-
-    Version = 1.0
-
+    Version  = 1.0
     Grouping = {
-
       TableGroupingPolicy = "CombineCompatibleSchemas"
-
     }
-
   })
-
 }
