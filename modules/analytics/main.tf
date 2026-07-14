@@ -80,19 +80,36 @@ resource "aws_iam_role_policy" "lambda_s3" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # Allow listing the raw bucket
       {
         Effect   = "Allow"
         Action   = ["s3:ListBucket"]
         Resource = [aws_s3_bucket.raw.arn]
       },
+      # Allow reading objects from raw bucket
       {
         Effect   = "Allow"
         Action   = ["s3:GetObject"]
         Resource = ["${aws_s3_bucket.raw.arn}/*"]
+      },
+      # Allow writing objects into processed bucket
+      {
+        Effect   = "Allow"
+        Action   = ["s3:PutObject"]
+        Resource = ["${aws_s3_bucket.processed.arn}/*"]
+      },
+      # Allow listing the processed bucket (optional but useful)
+      {
+        Effect   = "Allow"
+        Action   = ["s3:ListBucket"]
+        Resource = [aws_s3_bucket.processed.arn]
       }
     ]
   })
 }
+
+
+
 
 resource "aws_iam_role_policy" "lambda_sfn" {
   name = "${var.name_prefix}-analytics-lambda-sfn"
