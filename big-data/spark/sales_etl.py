@@ -30,11 +30,11 @@ def main():
         else "s3://sales-raw-bucket/"
     )
 
-output_path = (
-    sys.argv[2]
-    if len(sys.argv) > 2
-    else "s3://processed_bucket/output/"
-)
+    output_path = (
+        sys.argv[2]
+        if len(sys.argv) > 2
+        else "s3://processed_bucket/output/"
+    )
 
     print("=" * 60)
     print("Input Path :", input_path)
@@ -100,36 +100,4 @@ output_path = (
     )
 
     df = df.dropDuplicates(["title", "year"])
-    df = df.na.drop(subset=["title", "year", "rating", "votes"])
-
-    # Audit columns
-    df = df.withColumn("load_date", current_date())
-    df = df.withColumn("load_timestamp", current_timestamp())
-
-    df = df.cache()
-
-    print("\n===== TRANSFORMED SCHEMA =====")
-    df.printSchema()
-
-    print("\n===== SAMPLE DATA =====")
-    df.show(10, truncate=False)
-
-    print("\n===== FINAL RECORD COUNT =====")
-    print(df.count())
-
-    print("\n===== WRITING PARQUET FILES =====")
-
-   (
-    df.write
-    .mode("overwrite")
-    .partitionBy("load_date")
-    .option("compression", "snappy")
-    .parquet(output_path)
-)
-    print("===== PARQUET WRITE COMPLETED SUCCESSFULLY =====")
-
-    spark.stop()
-
-
-if __name__ == "__main__":
-    main()
+    df = df.na.drop(subset=["title", "year", "rating
