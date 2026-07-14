@@ -73,6 +73,12 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_s3_full" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+
 resource "aws_iam_role_policy" "lambda_s3" {
   name = "${var.name_prefix}-analytics-lambda-s3"
   role = aws_iam_role.lambda.id
