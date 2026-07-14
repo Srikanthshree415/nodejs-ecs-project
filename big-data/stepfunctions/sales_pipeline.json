@@ -39,7 +39,47 @@
           "Next": "NotifyFailure"
         }
       ],
-      "Next": "NotifySuccess"
+      "Next": "StartCrawler"
+    },
+    "StartCrawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Parameters": {
+        "Name": "${crawler_name}"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "WaitForCrawler"
+        }
+      ],
+      "Next": "WaitForCrawler"
+    },
+    "WaitForCrawler": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "CheckCrawler"
+    },
+    "CheckCrawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:getCrawler",
+      "Parameters": {
+        "Name": "${crawler_name}"
+      },
+      "Next": "CrawlerReady"
+    },
+    "CrawlerReady": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.Crawler.State",
+          "StringEquals": "READY",
+          "Next": "NotifySuccess"
+        }
+      ],
+      "Default": "WaitForCrawler"
     },
     "NotifySuccess": {
       "Type": "Task",

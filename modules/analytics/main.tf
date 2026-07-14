@@ -205,6 +205,7 @@ resource "aws_sfn_state_machine" "pipeline" {
 
   definition = templatefile("${path.root}/big-data/stepfunctions/sales_pipeline.json", {
     emr_cluster_id   = aws_emr_cluster.this.id
+    crawler_name     = aws_glue_crawler.sales_raw.name
     script_bucket    = aws_s3_bucket.raw.bucket
     script_key       = aws_s3_object.spark_script.key
     raw_bucket       = aws_s3_bucket.raw.bucket

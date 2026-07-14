@@ -194,7 +194,7 @@ variable "analytics_raw_bucket_name" {
 variable "analytics_processed_bucket_name" {
   description = "Bucket for curated Parquet output"
   type        = string
-  default     = "processed_bucket"
+  default     = "sales-processed-bucket"
 }
 
 variable "analytics_lambda_zip_path" {
