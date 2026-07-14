@@ -188,13 +188,13 @@ variable "enable_load_balancer" {
 variable "analytics_raw_bucket_name" {
   description = "Bucket for incoming sales CSV files"
   type        = string
-  default     = "sales-raw-bucket"
+  default     = ""
 }
 
 variable "analytics_processed_bucket_name" {
   description = "Bucket for curated Parquet output"
   type        = string
-  default     = "sales-processed-bucket"
+  default     = ""
 }
 
 variable "analytics_lambda_zip_path" {

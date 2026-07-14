@@ -12,8 +12,12 @@ terraform {
 }
 
 locals {
-  raw_bucket_name       = var.raw_bucket_name != "" ? var.raw_bucket_name : "${var.name_prefix}-sales-raw"
-  processed_bucket_name = var.processed_bucket_name != "" ? var.processed_bucket_name : "${var.name_prefix}-sales-processed"
+  bucket_prefix_parts   = regexall("[a-z0-9]+", lower(var.name_prefix))
+  bucket_prefix_raw     = length(local.bucket_prefix_parts) > 0 ? join("-", local.bucket_prefix_parts) : "analytics"
+  bucket_prefix         = substr(local.bucket_prefix_raw, 0, 30)
+  account_suffix        = data.aws_caller_identity.current.account_id
+  raw_bucket_name       = var.raw_bucket_name != "" ? var.raw_bucket_name : "${local.bucket_prefix}-${local.account_suffix}-sales-raw"
+  processed_bucket_name = var.processed_bucket_name != "" ? var.processed_bucket_name : "${local.bucket_prefix}-${local.account_suffix}-sales-processed"
 }
 
 data "archive_file" "lambda" {
