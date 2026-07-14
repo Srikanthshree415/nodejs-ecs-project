@@ -100,4 +100,4 @@ def main():
     )
 
     df = df.dropDuplicates(["title", "year"])
-    df = df.na.drop(subset=["title", "year", "rating
+    df = df.na.drop(subset=["title", "year", "rating", "votes"])
