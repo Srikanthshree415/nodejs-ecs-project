@@ -36,13 +36,27 @@ def normalize_header(name):
     )
 
 
+def get_s3_target(event):
+    if isinstance(event, dict) and event.get("Records"):
+        record = event["Records"][0]
+        bucket = record["s3"]["bucket"]["name"]
+        key = record["s3"]["object"]["key"]
+        return bucket, key
+
+    if isinstance(event, dict):
+        bucket = event.get("bucket")
+        key = event.get("key")
+        if bucket and key:
+            return bucket, key
+
+    raise ValueError("Expected an S3 notification event with Records, or a manual test payload with bucket and key")
+
+
 def lambda_handler(event, context):
     s3 = boto3.client("s3")
     sfn = boto3.client("stepfunctions")
     try:
-        record = event["Records"][0]
-        bucket = record["s3"]["bucket"]["name"]
-        key = record["s3"]["object"]["key"]
+        bucket, key = get_s3_target(event)
         key = urllib.parse.unquote(key).strip()
         if key.startswith("/"):
             key = key[1:]
